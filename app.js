@@ -79,7 +79,7 @@ app.get('/users', (req, res) => {
  *
  * @return response()
  */
-app.post('/', urlencodedParser, upload.single('image'), (req, res) => {
+app.post('/', urlencodedParser, (req, res) => {
     console.log(req.body);
     let data = { first_name: req.body.first_name, last_name: req.body.last_name, email: req.body.email };
 
@@ -89,17 +89,23 @@ app.post('/', urlencodedParser, upload.single('image'), (req, res) => {
         if (err) throw err;
         res.send(apiResponse(results));
     });
-    // if (!req.file) {
-    //     console.log("No file upload");
-    // } else {
-    //     console.log(req.file.filename)
-    //     var imgsrc = 'http://127.0.0.1:3000/images/' + req.file.filename;
-    //     var insertData = "INSERT INTO users_file(file_src)VALUES(?)"
-    //     db.query(insertData, [imgsrc], (err, result) => {
-    //         if (err) throw err
-    //         console.log("file uploaded")
-    //     })
-    // }
+});
+
+//@type   POST
+//route for post data
+app.post("/upload", upload.single('image'), (req, res) => {
+    if (!req.file) {
+        console.log("No file upload");
+    } else {
+        console.log(req.file.filename)
+        var imgsrc = 'http://127.0.0.1:3000/images/' + req.file.filename;
+        var insertData = "INSERT INTO users_file(file_src)VALUES(?)"
+        conn.query(insertData, [imgsrc], (err, result) => {
+            if (err) throw err;
+            console.log("file uploaded");
+            res.send(apiResponse(result));
+        })
+    }
 });
 
 /**

@@ -10,7 +10,14 @@
 
 <body>
     <div class="container">
-        <h1>Express Form :</h1>
+        <h1>User Form :</h1>
+        <form action="/upload" enctype="multipart/form-data" method="POST">
+            <div class="form-group">
+                <label for="profile_photo">Profile Photo</label>
+                <input type="file" name="image" accept='image/*'><br />
+                <input type="submit" value="Upload">
+            </div>
+        </form>
         <form action="/" method="POST">
             <!-- <div class="form-group">
                 <label for="profile_photo">Profile Photo</label>
