@@ -1,0 +1,12 @@
+{
+    "status": 200,
+    "error": null,
+    "response": [
+        {
+            "id": 1,
+            "first_name": "Tapas",
+            "last_name": "Sahoo",
+            "email": "tapas@admin.com"
+        }
+    ]
+}

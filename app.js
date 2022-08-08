@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const app = express();
 const mysql = require('mysql');
 
@@ -7,8 +9,13 @@ const mysql = require('mysql');
 parse application/json
 --------------------------------------------
 --------------------------------------------*/
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
+
+//use express static folder
+app.use(express.static("./public"));
+
+app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+var urlencodedParser = express.urlencoded({ extended: false });
 
 /*------------------------------------------
 --------------------------------------------
@@ -27,9 +34,72 @@ const conn = mysql.createConnection({
 Shows Mysql Connect
 --------------------------------------------
 --------------------------------------------*/
-conn.connect((err) => {
-    if (err) throw err;
-    console.log('Mysql Connected with App...');
+conn.connect(function (err) {
+    if (err) {
+        return console.error('error: ' + err.message);
+    }
+    console.log('Connected to the MySQL server...');
+});
+
+//route for Home page
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
+//! Use of Multer
+var storage = multer.diskStorage({
+    destination: (req, file, callBack) => {
+        callBack(null, './public/images/')     // './public/images/' directory name where save the file
+    },
+    filename: (req, file, callBack) => {
+        callBack(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    }
+})
+
+var upload = multer({
+    storage: storage
+});
+
+/**
+ * Get All Items
+ *
+ * @return response()
+ */
+app.get('/users', (req, res) => {
+    let sqlQuery = "SELECT * FROM users";
+
+    let query = conn.query(sqlQuery, (err, results) => {
+        if (err) throw err;
+        res.send(apiResponse(results));
+    });
+});
+
+/**
+ * Create New User
+ *
+ * @return response()
+ */
+app.post('/', urlencodedParser, upload.single('image'), (req, res) => {
+    console.log(req.body);
+    let data = { first_name: req.body.first_name, last_name: req.body.last_name, email: req.body.email };
+
+    let sqlQuery = "INSERT INTO users SET ?";
+
+    let query = conn.query(sqlQuery, data, (err, results) => {
+        if (err) throw err;
+        res.send(apiResponse(results));
+    });
+    // if (!req.file) {
+    //     console.log("No file upload");
+    // } else {
+    //     console.log(req.file.filename)
+    //     var imgsrc = 'http://127.0.0.1:3000/images/' + req.file.filename;
+    //     var insertData = "INSERT INTO users_file(file_src)VALUES(?)"
+    //     db.query(insertData, [imgsrc], (err, result) => {
+    //         if (err) throw err
+    //         console.log("file uploaded")
+    //     })
+    // }
 });
 
 /**
@@ -118,6 +188,6 @@ function apiResponse(results) {
 Server listening
 --------------------------------------------
 --------------------------------------------*/
-app.listen(3000, () => {
-    console.log('Server started on port 3000...');
-});
+//create connection
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => console.log(`Server is running at port ${PORT}`))
